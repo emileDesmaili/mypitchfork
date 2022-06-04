@@ -1,3 +1,4 @@
+![alt text](streamlit_app/assets/app_logo.PNG)
 # MyPitchfork
 
 An app for all things Pitchfork
