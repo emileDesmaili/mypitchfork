@@ -1,6 +1,10 @@
-# mypitchfork
+# MyPitchfork
 
-Streamlit App Boilerplate that contains everything you need to get running.
+An app for all things Pitchfork
+
+- Pitchfork Review Generator using finetuned GPT2 on 20K+ pitchfork reviews
+- Pitchfork review embeddings with pretrained BERT model
+- data analysis
 
 Built with ❤️ by [emiledesmaili](https://github.com/emiledesmaili)
 
