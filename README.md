@@ -4,7 +4,7 @@
 An app for all things Pitchfork
 
 - Pitchfork Review Generator using finetuned GPT2 on 20K+ pitchfork reviews
-- Pitchfork review embeddings with pretrained BERT model
+- Pitchfork review embeddings with pretrained BERT model used to predict the score with a Random Forest Regressor
 - data analysis
 
 Built with ❤️ by [emiledesmaili](https://github.com/emiledesmaili)
