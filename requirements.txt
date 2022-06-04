@@ -1,1 +1,3 @@
-streamlit==1.8.1
+version https://git-lfs.github.com/spec/v1
+oid sha256:4a085d7ed35884ab66a57371fb974bc279803f705affc13e7c5a04ceadf85386
+size 16

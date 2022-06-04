@@ -1,10 +1,3 @@
--r requirements.txt
-black
-flake8
-isort
-pep8-naming
-pre-commit
-pytest
-pytest-cov
-seleniumbase
-watchdog
+version https://git-lfs.github.com/spec/v1
+oid sha256:444521208d7d93c8b6186200e0aacb4d7417bb6f8e83cb1ac81abb5ea07a2515
+size 112
