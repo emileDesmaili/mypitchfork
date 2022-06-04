@@ -3,7 +3,9 @@ import streamlit as st
 import pandas as pd
 import gpt_2_simple as gpt2
 from streamlit_option_menu import option_menu
-sess = gpt2.start_tf_sess()
+from sentence_transformers import SentenceTransformer
+import pickle
+import numpy as np
 
 
 
@@ -43,10 +45,18 @@ with page_container:
 
 # DATA IMPORT
 # gpt is cached
+sess = gpt2.start_tf_sess()
 @st.cache()
 def load_gpt():
     gpt2.load_gpt2(sess)
 load_gpt()
+
+@st.cache(allow_output_mutation=True)
+def load_predictor():
+    filename = 'models/score_model.sav'
+    loaded_model = pickle.load(open(filename, 'rb'))
+    return loaded_model
+predictor = load_predictor()
 
 #importing review data with embeddings from BERT
 @st.cache()
@@ -54,13 +64,34 @@ def load_csv():
     return pd.read_csv('data/raw/pitchfork_data_vec.csv')
 df = load_csv()
 
+model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+
 
 if page == 'Review Generator':
 #review generator
     st.title('Review Generator')
-    prefix = st.text_input('You can type the beginning of the review, or leave it blank')
-    if st.button('Generate P4K Review'):
-        text = gpt2.generate(sess, prefix=prefix, length=500, return_as_list=True)[0]
+    with st.form('Review Parameters'):
+        prefix = st.text_input('You can type the beginning of the review, or leave it blank')
+        length = st.number_input('length of review (number of characters)',1,1500)
+        submitted = st.form_submit_button('Generate Review!')
+    if submitted:
+        with st.spinner('Writing mindblowing, articulate & insightful review...'):
+            text = gpt2.generate(sess, prefix=prefix, length=length, return_as_list=True)[0]
         st.success('Well Done, you can almost be a writer for Pitchfork!')
         st.write(text)
+        with st.spinner('Consulting all P4K writers to decide on the most accurate score'):
+            new_review = model.encode(text)
+            score = np.asscalar(predictor.predict(new_review.reshape(1,-1)))
+            if score >=8.3:
+                st.write('**Best New Music**')
+                st.metric('Score:', round(score,1))
+            else:
+                st.metric('Score:', round(score,1))
+
+
+
+
+if page == 'Explorer':
+    st.write(df)
+    
         
