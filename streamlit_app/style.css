@@ -1,0 +1,102 @@
+.block-container{
+    /* width:90% !important; */
+    /* max-width:2000px !important; */
+}
+.title-box{
+    background-color:#10093b;
+    color:white !important;
+    padding:1rem;
+    margin-bottom:2rem;
+    border-radius:5px;
+    font-family: "Arial";
+  }
+  
+  .custom-card{
+      background-color:#d6d0fa;
+      border-radius:5px;
+      padding:1rem;
+      margin-bottom:1rem;
+      height:150px;
+  }
+.image-container.stImage > img{
+    margin:auto;
+    width:80%
+}
+
+nav{
+    /* margin-bottom:40px; */
+    font-family: "Segoe UI";
+}
+
+.navbar-brand{
+    color:#d7c378 !important;
+    font-size:1.1rem;
+    font-weight:500;
+}
+
+.navbar-brand > img{
+    vertical-align: inherit;
+    margin-right:10px;
+}
+
+.nav-link{
+    color:white !important;
+}
+
+.nav-link:hover{
+    color:#d7c378 !important;
+}
+
+body{
+    font-family:"Segoe UI";
+}
+
+.stBlock{
+    padding-left:30px;
+    padding-right:30px;
+
+}
+
+.reportview-container dl, .reportview-container ol, .reportview-container p, .reportview-container ul{
+    margin: 0rem 0rem 0rem !important;
+}
+
+.reportview-container .markdown-text-container{
+    margin-bottom:-0.5rem;
+}
+.reportview-container .element-container{
+    /* margin: 0rem 0rem 0rem !important; */
+}
+
+.reportview-container .main .block-container {
+    padding: 0rem 0rem 10rem !important;
+    /* font-family: "Roboto" !important; */
+
+}
+
+
+.Widget > div > label > div{
+    font-family: "Helvetica";
+} 
+
+.markdown-text-container.stMarkdown{
+    font-family: "Helvetica";
+
+}
+
+.markdown-text-container > p{
+    font-family: "Helvetica";
+}
+
+/* .st-br{
+    background-color:#00ADD0
+} */
+
+.streamlit-button.primary-button:hover{
+    color:#00ADD0;
+    border-color:#00ADD0
+}
+.ag-header-cell {
+    background-color: rgb(220, 224, 238);
+    color: #FFF;
+}
