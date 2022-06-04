@@ -5,7 +5,7 @@ An app for all things Pitchfork
 
 - Pitchfork Review Generator using finetuned GPT2 on 20K+ pitchfork reviews
 - Pitchfork review embeddings with pretrained BERT model
-- data analysis
+- Some data viz
 
 Built with ❤️ by [emiledesmaili](https://github.com/emiledesmaili)
 
