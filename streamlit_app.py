@@ -92,6 +92,6 @@ if page == 'Review Generator':
 
 
 if page == 'Explorer':
-    st.write(df)
+    st.write(df.head(10))
     
         
