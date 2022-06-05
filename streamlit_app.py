@@ -7,7 +7,7 @@ import pickle
 import numpy as np
 import plotly.express as px
 from transformers import pipeline
-from transformers import GPT2Tokenizer, TFGPT2Model
+
 
 
 # PAGE SETUP
