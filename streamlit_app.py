@@ -56,7 +56,6 @@ def load_predictor():
     loaded_model = pickle.load(open(filename, 'rb'))
     return loaded_model
 
-
 #importing review data with embeddings from BERT
 @st.cache()
 def load_csv():
@@ -67,8 +66,9 @@ def load_csv():
 
 
 if page == 'Review Generator':
-    load_gpt()
-    predictor = load_predictor()
+    gpt2.load_gpt2(sess)
+    filename = 'models/score_model.sav'
+    predictor = pickle.load(open(filename, 'rb'))
     model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 #review generator
     st.title('Review Generator')
@@ -96,20 +96,63 @@ if page == 'Review Generator':
 if page == 'Explorer':
     df = load_csv()
     st.title('Pitchfork Review Explorer')
-    st.header('Line Plots')
-    st.write('N.B.  bnm means Best New Music')
+    st.header('Some Facts! (as of early 2019)')
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        avg_score = df['score'].mean()
+        st.metric('Average Pitchfork Review Score',round(avg_score,1))
+    with col2:
+        st.metric('Number of Best New Music awarded',df['bnm'].sum())
+    with col3:
+        st.metric('Number of perfect 10s',len(df[df['score']==10]))
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        #plotting review histogram
+        fig = px.histogram(df['score'], title='Review Score Distribution')
+        fig.update_layout(height=400) 
+        fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}) 
+        fig.update_layout(showlegend=False, xaxis_title='Score')
+        fig.update_traces(marker_color='firebrick')
+        st.plotly_chart(fig, use_container_width=True)
+    with col2:
+        #plotting average score per year
+        df_merged = pd.DataFrame(list(zip(df.groupby('release_year').mean()['score'],df.groupby('release_year').sum()['bnm'])),
+                     columns=['score','bnm'], index=df.groupby('release_year').mean().index)
+        fig = px.scatter(df_merged, y='score',title='Average Score per Year (bubble indicates number of BNMs)',size='bnm')
+        fig.update_layout(height=400) 
+        fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}) 
+        fig.update_traces(line=dict(color="firebrick", width=3), marker_color='firebrick')
+        fig.update_layout(showlegend=False, xaxis_title=None, yaxis_title='Average Score')
+        st.plotly_chart(fig, use_container_width=True)
+    with col3:
+        df_merged = df[df['artist']!='Various Artists']
+        df_merged = pd.DataFrame(list(zip(df_merged.groupby('artist').count()['score'],df_merged.groupby('artist').sum()['bnm'])),
+                     columns=['score','bnm'], index=df_merged.groupby('artist').mean().index)
+        df_merged['ratio'] = df_merged['bnm']/df_merged['score']
+        fig = px.bar(df_merged['bnm'].nlargest(10), title='Artists with most Best New Music')
+        fig.update_layout(height=400) 
+        fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}) 
+        fig.update_layout(showlegend=False, xaxis_title='Score')
+        fig.update_traces(marker_color='firebrick')
+        st.plotly_chart(fig, use_container_width=True)
+
+
+
+    st.header('Make Your Plots')
+    st.write('bnm means Best New Music')
     st.write('Filters')
     filter1, filter2, filter3, filter4, filter5 = st.columns(5)
 
     with filter1:
         artist = st.multiselect('Artist',df['artist'].unique())
     with filter2:
-        genre = st.multiselect('Genre',df['genre'].unique())
+        score = st.slider('Score',0., 10.,(0.,10.),0.5)
     with filter3:
+        genre = st.multiselect('Genre',df['genre'].unique())
+    with filter4:
         year = st.slider('Release Year',int(df['release_year'].nsmallest(1)),int(df['release_year'].nlargest(1)),
         (int(df['release_year'].nsmallest(1)),int(df['release_year'].nlargest(1))))
-    with filter4:
-        score = st.slider('Score',0., 10.,(0.,10.),0.5)
+
 
 
     # dataframe filtering
@@ -132,6 +175,7 @@ if page == 'Explorer':
         large = st.selectbox('Display top/bottom...',('Top','Bottom','All Values'))
     with col5:
         n = st.number_input('...results',5,50)
+    chart = st.selectbox('Chart Type',('Line','Histogram','Bar', 'Scatter'))
     if x == y:
         st.info(f'You chose {x} twice!')
     else:
@@ -143,10 +187,21 @@ if page == 'Explorer':
             plot_data = plot_data.nlargest(n)
         if large =='Bottom':
             plot_data = plot_data.nsmallest(n)
-        fig = px.line(plot_data)
+        if chart =='Line':
+            fig = px.line(plot_data)
+            fig.update_traces(line=dict(color="firebrick", width=3))
+        if chart == 'Bar':
+            fig = px.bar(plot_data)
+            fig.update_traces(marker_color='firebrick')
+        if chart == 'Scatter':
+            fig = px.scatter(plot_data)
+            fig.update_traces(marker_color='firebrick')
+        if chart =='Histogram':
+            fig = px.histogram(plot_data)
+            fig.update_traces(marker_color='firebrick')
         fig.update_layout(height=600) 
         fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',})
-        fig.update_traces(line=dict(color="firebrick", width=3))
+        
         st.plotly_chart(fig, use_container_width=True)
 
 
