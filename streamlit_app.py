@@ -9,7 +9,7 @@ from sentence_transformers import SentenceTransformer
 import pickle
 import numpy as np
 import plotly.express as px
-
+from transformers import pipeline
 
 
 # PAGE SETUP
@@ -64,7 +64,10 @@ def load_predictor():
 def load_csv():
     return pd.read_csv('data/raw/pitchfork.csv')
 
-
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+def load_model():
+    return pipeline("text-generation", model="e-tony/gpt2-rnm")
+gpt2_model = load_model()
 
 
 
@@ -81,7 +84,7 @@ if page == 'Review Generator':
         submitted = st.form_submit_button('Generate Review!')
     if submitted:
         with st.spinner('Writing mindblowing, articulate & insightful review...'):
-            text = gpt2.generate(sess, prefix=prefix, length=length, return_as_list=True)[0]
+            text = gpt2_model.generate(sess, prefix=prefix, length=length, return_as_list=True)[0]
 
         st.success('Well Done, you can almost be a writer for Pitchfork!')
         st.markdown(text)
