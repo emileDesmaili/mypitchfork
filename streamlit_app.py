@@ -47,7 +47,7 @@ with page_container:
 
 # DATA IMPORT
 # gpt is cached
-#tf.reset_default_graph()
+tf.compat.v1.reset_default_graph()
 sess = gpt2.start_tf_sess()
 @st.cache()
 def load_gpt():
