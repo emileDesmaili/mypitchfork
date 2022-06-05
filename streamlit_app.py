@@ -6,7 +6,7 @@ from streamlit_option_menu import option_menu
 from sentence_transformers import SentenceTransformer
 import pickle
 import numpy as np
-
+import plotly.express as px
 
 
 
@@ -49,25 +49,27 @@ sess = gpt2.start_tf_sess()
 @st.cache()
 def load_gpt():
     gpt2.load_gpt2(sess)
-load_gpt()
 
 @st.cache(allow_output_mutation=True)
 def load_predictor():
     filename = 'models/score_model.sav'
     loaded_model = pickle.load(open(filename, 'rb'))
     return loaded_model
-predictor = load_predictor()
+
 
 #importing review data with embeddings from BERT
 @st.cache()
 def load_csv():
     return pd.read_csv('data/raw/pitchfork_data_vec.csv')
-df = load_csv()
 
-model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+
+
 
 
 if page == 'Review Generator':
+    load_gpt()
+    predictor = load_predictor()
+    model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 #review generator
     st.title('Review Generator')
     with st.form('Review Parameters'):
@@ -92,6 +94,62 @@ if page == 'Review Generator':
 
 
 if page == 'Explorer':
-    st.write(df.head(10))
+    df = load_csv()
+    st.title('Pitchfork Review Explorer')
+    st.header('Line Plots')
+    st.write('N.B.  bnm means Best New Music')
+    st.write('Filters')
+    filter1, filter2, filter3, filter4, filter5 = st.columns(5)
+
+    with filter1:
+        artist = st.multiselect('Artist',df['artist'].unique())
+    with filter2:
+        genre = st.multiselect('Genre',df['genre'].unique())
+    with filter3:
+        year = st.slider('Release Year',int(df['release_year'].nsmallest(1)),int(df['release_year'].nlargest(1)),
+        (int(df['release_year'].nsmallest(1)),int(df['release_year'].nlargest(1))))
+    with filter4:
+        score = st.slider('Score',0., 10.,(0.,10.),0.5)
+
+
+    # dataframe filtering
+    
+    df_filtered = df.loc[(pd.to_numeric(df['release_year']).between(year[0],year[1]))
+                            & (pd.to_numeric(df['score']).between(score[0],score[1])) 
+                            & df['artist'].isin(artist if artist else df['artist'].unique())
+                            & df['genre'].isin(genre if genre else df['artist'].unique())
+                        ]
+
+    col1, col2, col3, col4, col5= st.columns(5)
+    columns = ['artist','genre','release_year','score','bnm','author','album']
+    with col1:
+        y = st.selectbox('Plot',columns)
+    with col2:
+        grouper = st.selectbox('Mean or Sum',('Mean','Sum'))
+    with col3:
+        x = st.selectbox('relative to',columns)
+    with col4:
+        large = st.selectbox('Display top/bottom...',('Top','Bottom','All Values'))
+    with col5:
+        n = st.number_input('...results',5,50)
+    if x == y:
+        st.info(f'You chose {x} twice!')
+    else:
+        if grouper == 'Mean':
+            plot_data = df_filtered.groupby(x).mean()[y]
+        if grouper == 'Sum':
+            plot_data = df_filtered.groupby(x).sum()[y]
+        if large =='Top':
+            plot_data = plot_data.nlargest(n)
+        if large =='Bottom':
+            plot_data = plot_data.nsmallest(n)
+        fig = px.line(plot_data)
+        fig.update_layout(height=600) 
+        fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',})
+        fig.update_traces(line=dict(color="firebrick", width=3))
+        st.plotly_chart(fig, use_container_width=True)
+
+
+    
     
         
