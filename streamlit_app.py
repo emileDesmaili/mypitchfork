@@ -59,7 +59,7 @@ def load_predictor():
 #importing review data with embeddings from BERT
 @st.cache()
 def load_csv():
-    return pd.read_csv('data/raw/pitchfork_data_vec.csv')
+    return pd.read_csv('data/raw/pitchfork.csv')
 
 
 
