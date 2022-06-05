@@ -81,7 +81,8 @@ if page == 'Review Generator':
         submitted = st.form_submit_button('Generate Review!')
     if submitted:
         with st.spinner('Writing mindblowing, articulate & insightful review...'):
-            text = gpt2.generate(sess, prefix=prefix, length=length, return_as_list=True)[0]
+            #text = gpt2.generate(sess, prefix=prefix, length=length, return_as_list=True)[0]
+            text = "sa"
         st.success('Well Done, you can almost be a writer for Pitchfork!')
         st.markdown(text)
         with st.spinner('Consulting all P4K writers to decide on the most accurate score'):
