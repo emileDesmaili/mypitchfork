@@ -1,6 +1,8 @@
 
 import streamlit as st
 import pandas as pd
+import tensorflow as tf
+
 import gpt_2_simple as gpt2
 from streamlit_option_menu import option_menu
 from sentence_transformers import SentenceTransformer
@@ -45,6 +47,7 @@ with page_container:
 
 # DATA IMPORT
 # gpt is cached
+tf.reset_default_graph()
 sess = gpt2.start_tf_sess()
 @st.cache()
 def load_gpt():
