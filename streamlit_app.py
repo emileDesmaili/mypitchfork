@@ -1,8 +1,6 @@
 
 import streamlit as st
 import pandas as pd
-import tensorflow as tf
-
 from streamlit_option_menu import option_menu
 from sentence_transformers import SentenceTransformer
 import pickle
@@ -80,7 +78,7 @@ if page == 'Review Generator':
     if submitted:
         with st.spinner('Writing mindblowing, articulate & insightful review...'):
             #text = gpt2.generate(sess, prefix=prefix, length=length, return_as_list=True)[0]
-            text = gpt2_model(prefix, max_length = length)
+            text = gpt2_model(prefix, max_length = length)[0]['generated_text']
 
         st.success('Well Done, you can almost be a writer for Pitchfork!')
         st.markdown(text)
