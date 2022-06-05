@@ -47,7 +47,7 @@ with page_container:
 
 # DATA IMPORT
 # gpt is cached
-tf.compat.v1.reset_default_graph()
+
 
 @st.cache()
 def load_gpt():
@@ -72,6 +72,7 @@ gpt2_model = load_model()
 
 
 if page == 'Review Generator':
+    tf.compat.v1.reset_default_graph()
     sess = gpt2.start_tf_sess()
     gpt2.load_gpt2(sess)
     filename = 'models/score_model.sav'
