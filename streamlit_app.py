@@ -80,10 +80,10 @@ if page == 'Review Generator':
         with st.spinner('Writing mindblowing, articulate & insightful review...'):
             text = gpt2.generate(sess, prefix=prefix, length=length, return_as_list=True)[0]
         st.success('Well Done, you can almost be a writer for Pitchfork!')
-        st.write(text)
+        st.markdown(text)
         with st.spinner('Consulting all P4K writers to decide on the most accurate score'):
             new_review = model.encode(text)
-            score = np.asscalar(predictor.predict(new_review.reshape(1,-1)))
+            score = predictor.predict(new_review.reshape(1,-1)).item()
             if score >=8.3:
                 st.write('**Best New Music**')
                 st.metric('Score:', round(score,1))
@@ -144,7 +144,7 @@ if page == 'Explorer':
     filter1, filter2, filter3, filter4, filter5 = st.columns(5)
 
     with filter1:
-        artist = st.multiselect('Artist',df['artist'].unique())
+        artist = st.multiselect('Artist',(df['artist'].unique()))
     with filter2:
         score = st.slider('Score',0., 10.,(0.,10.),0.5)
     with filter3:
@@ -160,21 +160,26 @@ if page == 'Explorer':
     df_filtered = df.loc[(pd.to_numeric(df['release_year']).between(year[0],year[1]))
                             & (pd.to_numeric(df['score']).between(score[0],score[1])) 
                             & df['artist'].isin(artist if artist else df['artist'].unique())
-                            & df['genre'].isin(genre if genre else df['artist'].unique())
+                            & df['genre'].isin(genre if genre else df['genre'].unique())
                         ]
 
     col1, col2, col3, col4, col5= st.columns(5)
-    columns = ['artist','genre','release_year','score','bnm','author','album']
+    columns = ['artist','genre','release_year','score','bnm','author']
+    if artist:
+        columns.remove('artist')
+    if genre:
+        columns.remove('genre')
+    
     with col1:
         y = st.selectbox('Plot',columns)
     with col2:
-        grouper = st.selectbox('Mean or Sum',('Mean','Sum'))
+        grouper = st.selectbox('Data grouping method',('Mean','Sum','Count'))
     with col3:
-        x = st.selectbox('relative to',columns)
+        x = st.selectbox('Relative to',columns)
     with col4:
         large = st.selectbox('Display top/bottom...',('Top','Bottom','All Values'))
     with col5:
-        n = st.number_input('...results',5,50)
+        n = st.number_input('...results',int(5),int(50))
     chart = st.selectbox('Chart Type',('Line','Histogram','Bar', 'Scatter'))
     if x == y:
         st.info(f'You chose {x} twice!')
@@ -183,6 +188,8 @@ if page == 'Explorer':
             plot_data = df_filtered.groupby(x).mean()[y]
         if grouper == 'Sum':
             plot_data = df_filtered.groupby(x).sum()[y]
+        if grouper =='Count':
+            plot_data = df_filtered.groupby(x).count()[y]
         if large =='Top':
             plot_data = plot_data.nlargest(n)
         if large =='Bottom':
