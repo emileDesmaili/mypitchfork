@@ -4,9 +4,10 @@
 An app for all things Pitchfork
 
 - Pitchfork Review Generator using finetuned GPT2 on 20K+ pitchfork reviews
-<<<<<<< HEAD
+
 - Pitchfork review embeddings with pretrained BERT model used to predict the score with a Random Forest Regressor
 - Some Data Viz
+
 
 Built with ❤️ by [emiledesmaili](https://github.com/emiledesmaili)
 
@@ -37,7 +38,7 @@ git clone git@github.com:emiledesmaili/mypitchfork.git
 cd mypitchfork
 
 # Run the streamlit app (will install dependencies in a virtualenvironment in the folder venv)
-make run
+streamlit run streamlit_app.py
 ```
 
 Open your browser to [http://localhost:8501/](http://localhost:8501/) if it doesn't open automatically.
