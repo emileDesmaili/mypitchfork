@@ -3,13 +3,13 @@ import streamlit as st
 import pandas as pd
 import tensorflow as tf
 
-import gpt_2_simple as gpt2
 from streamlit_option_menu import option_menu
 from sentence_transformers import SentenceTransformer
 import pickle
 import numpy as np
 import plotly.express as px
 from transformers import pipeline
+from transformers import GPT2Tokenizer, TFGPT2Model
 
 
 # PAGE SETUP
@@ -48,11 +48,6 @@ with page_container:
 # DATA IMPORT
 # gpt is cached
 
-
-@st.cache()
-def load_gpt():
-    gpt2.load_gpt2(sess)
-
 @st.cache(allow_output_mutation=True)
 def load_predictor():
     filename = 'models/score_model.sav'
@@ -66,15 +61,13 @@ def load_csv():
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def load_model():
-    return pipeline("text-generation", model="gpt2")
+    return pipeline("text-generation", model="EmileEsmaili/gpt2-p4k")
 gpt2_model = load_model()
 
 
 
 if page == 'Review Generator':
-    tf.compat.v1.reset_default_graph()
-    sess = gpt2.start_tf_sess()
-    gpt2.load_gpt2(sess)
+
     filename = 'models/score_model.sav'
     predictor = pickle.load(open(filename, 'rb'))
     model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
@@ -86,7 +79,8 @@ if page == 'Review Generator':
         submitted = st.form_submit_button('Generate Review!')
     if submitted:
         with st.spinner('Writing mindblowing, articulate & insightful review...'):
-            text = gpt2.generate(sess, prefix=prefix, length=length, return_as_list=True)[0]
+            #text = gpt2.generate(sess, prefix=prefix, length=length, return_as_list=True)[0]
+            text = gpt2_model(prefix, max_length = length)
 
         st.success('Well Done, you can almost be a writer for Pitchfork!')
         st.markdown(text)
