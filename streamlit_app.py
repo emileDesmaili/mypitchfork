@@ -7,6 +7,8 @@ import pickle
 import numpy as np
 import plotly.express as px
 from transformers import pipeline
+import re
+from unidecode import unidecode
 
 
 
@@ -40,7 +42,7 @@ st.sidebar.write(f'# Welcome')
 
 page_container = st.sidebar.container()
 with page_container:
-    page = option_menu("Menu", ["Review Generator", 'Explorer','About'], 
+    page = option_menu("Menu", ["Review Generator", 'Data','Review Smart Engine'], 
     icons=['reddit','dpad','info'], menu_icon="cast", default_index=0)
 
 # DATA IMPORT
@@ -62,14 +64,19 @@ def load_model():
     return pipeline("text-generation", model="EmileEsmaili/gpt2-p4k")
 gpt2_model = load_model()
 
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+def load_w2v():
+    return SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+embedder = load_model()
 
+### Pages
 
+#review generator
 if page == 'Review Generator':
 
     filename = 'models/score_model.sav'
     predictor = pickle.load(open(filename, 'rb'))
-    model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-#review generator
+    
     st.title('Review Generator')
     with st.form('Review Parameters'):
         prefix = st.text_input('You can type the beginning of the review, or leave it blank')
@@ -83,15 +90,13 @@ if page == 'Review Generator':
         st.success('Well Done, you can almost be a writer for Pitchfork!')
         st.markdown(text)
         with st.spinner('Consulting all P4K writers to decide on the most accurate score'):
-            new_review = model.encode(text)
+            new_review = embedder.encode(text)
             score = predictor.predict(new_review.reshape(1,-1)).item()
             if score >=8.3:
                 st.write('**Best New Music**')
                 st.metric('Score:', round(score,1))
             else:
                 st.metric('Score:', round(score,1))
-
-
 
 
 if page == 'Explorer':
@@ -212,7 +217,33 @@ if page == 'Explorer':
         
         st.plotly_chart(fig, use_container_width=True)
 
+if page =='Review Smart Engine':
+    df = load_csv()
+    with st.form('Search Reviews'):
+        keywords = st.text_input('Keywords in review')
+        filter1, filter2, filter3, filter4, filter5 = st.columns(5)
+        with filter1:
+            artist = st.multiselect('Artist',(df['artist'].unique()))
+        with filter2:
+            score = st.slider('Score',0., 10.,(0.,10.),0.5)
+        with filter3:
+            genre = st.multiselect('Genre',df['genre'].unique())
+        with filter4:
+            year = st.slider('Release Year',int(df['release_year'].nsmallest(1)),int(df['release_year'].nlargest(1)),
+            (int(df['release_year'].nsmallest(1)),int(df['release_year'].nlargest(1))))
+        
+        submitted = st.form_submit_button('Search')
+    if submitted:
+        # dataframe filtering
+        with st.spinner('Searching over 20,000 reviews...'):
+            df_filtered = df.loc[(pd.to_numeric(df['release_year']).between(year[0],year[1]))
+                            & (pd.to_numeric(df['score']).between(score[0],score[1])) 
+                            & df['artist'].isin(artist if artist else df['artist'].unique())
+                            & df['genre'].isin(genre if genre else df['genre'].unique())
+                            & df['review'].dropna().apply(unidecode).str.contains(keywords,flags=re.IGNORECASE, regex=True)  
+                            ]
 
+            st.write(df_filtered)
     
     
         
