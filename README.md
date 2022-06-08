@@ -3,7 +3,7 @@
 
 Don't we all love [Pitchfork](https://pitchfork.com/) and their absurd review system?  I decided to build an app for all things Pitchfork, including:
 - a Pitchfork Review Generator using 
-    - finetuned GPT2 on 20K+ pitchfork reviews (available on huggingface [here](https://huggingface.co/EmileEsmaili/gpt2-p4k))
+    - finetuned GPT2 on 20K+ pitchfork reviews (available on my huggingface page [here](https://huggingface.co/EmileEsmaili/gpt2-p4k))
     - Pitchfork review embeddings with pretrained BERT model used to predict the score with a Random Forest Regressor
 - A Pitchfork review Smart search engine using embeddings & NER to recommend similar reviews (In Progress)
 - A Review explorer with some facts of life, data viz, as well as an interactive plotly 'chart maker'
