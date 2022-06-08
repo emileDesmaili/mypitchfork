@@ -67,7 +67,7 @@ gpt2_model = load_model()
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def load_w2v():
     return SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-embedder = load_model()
+embedder = load_w2v()
 
 ### Pages
 
