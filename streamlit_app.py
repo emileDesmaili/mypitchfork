@@ -42,7 +42,7 @@ st.sidebar.write(f'# Welcome')
 
 page_container = st.sidebar.container()
 with page_container:
-    page = option_menu("Menu", ["Review Generator", 'Data','Review Smart Engine'], 
+    page = option_menu("Menu", ["Review Generator", 'Explorer','Review Smart Engine'], 
     icons=['reddit','dpad','info'], menu_icon="cast", default_index=0)
 
 # DATA IMPORT
