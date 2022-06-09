@@ -9,20 +9,20 @@ import plotly.express as px
 from transformers import pipeline
 import re
 from unidecode import unidecode
-
-
+from streamlit_assets.components import Review
+from jmd_imagescraper.core import * # dont't worry, it's designed to work with import *
 
 # PAGE SETUP
 st.set_page_config(
     page_title="MyP4K",
     layout="wide",
-    page_icon="streamlit_app/assets/p4k_logo.png",
+    page_icon="streamlit_assets/assets/p4k_logo.png",
 
 )
 
 
 # From https://discuss.streamlit.io/t/how-to-center-images-latex-header-title-etc/1946/4
-with open("streamlit_app/style.css") as f:
+with open("streamlit_assets/style.css") as f:
     st.markdown("""<link href='http://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900italic,900' rel='stylesheet' type='text/css'>""", unsafe_allow_html=True)
     st.markdown('<style>{}</style>'.format(f.read()), unsafe_allow_html=True)
 
@@ -34,7 +34,7 @@ with left_column:
 with right_column:
     st.write("##### Authors\nThis tool has been developed by [Emile D. Esmaili](https://github.com/emileDesmaili)")
 with center_column:
-    st.image("streamlit_app/assets/app_logo.PNG")
+    st.image("streamlit_assets/assets/app_logo.PNG")
 
 
 
@@ -61,8 +61,11 @@ def load_csv():
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def load_model():
-    return pipeline("text-generation", model="EmileEsmaili/gpt2-p4k")
-gpt2_model = load_model()
+    #EmileEsmaili/gpt2-p4k is my model
+    model = pipeline('text-generation',"StevenShoemakerNLP/pitchfork")  
+ 
+    return model
+model = load_model()
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def load_w2v():
@@ -76,23 +79,31 @@ if page == 'Review Generator':
 
     filename = 'models/score_model.sav'
     predictor = pickle.load(open(filename, 'rb'))
-    
+
     st.title('Review Generator')
+
     with st.form('Review Parameters'):
-        prefix = st.text_input('You can type the beginning of the review, or leave it blank')
-        length = st.number_input('length of review (number of characters)',1,1500)
+        prefix = st.text_input('You can type the beginning of the review, to specify the artist name for instance, or leave it blank')
+
+
+        #length = st.number_input('length of review (number of characters)',200,1500)
         submitted = st.form_submit_button('Generate Review!')
     if submitted:
         with st.spinner('Writing mindblowing, articulate & insightful review...'):
             #text = gpt2.generate(sess, prefix=prefix, length=length, return_as_list=True)[0]
-            text = gpt2_model(prefix, max_length = length)[0]['generated_text']
+            #encoded_input = tokenizer.encode(prefix, return_tensors='pt')
+            #output = model.generate(encoded_input, min_length=length)
+            #text = tokenizer.decode(output[0], skip_special_tokens=True)
+            text = model(prefix,max_length=1023)[0]['generated_text']
+            text = text.replace('|EndOfText|','  \n ' )
+
 
         st.success('Well Done, you can almost be a writer for Pitchfork!')
         st.markdown(text)
         with st.spinner('Consulting all P4K writers to decide on the most accurate score'):
             new_review = embedder.encode(text)
             score = predictor.predict(new_review.reshape(1,-1)).item()
-            if score >=8.3:
+            if score >=8.2:
                 st.write('**Best New Music**')
                 st.metric('Score:', round(score,1))
             else:
@@ -217,8 +228,12 @@ if page == 'Explorer':
         
         st.plotly_chart(fig, use_container_width=True)
 
+
 if page =='Review Smart Engine':
     df = load_csv()
+    if 'engine_df' not in st.session_state:
+        st.session_state['engine_df'] = pd.DataFrame([])
+
     with st.form('Search Reviews'):
         keywords = st.text_input('Keywords in review')
         filter1, filter2, filter3, filter4, filter5 = st.columns(5)
@@ -242,8 +257,44 @@ if page =='Review Smart Engine':
                             & df['genre'].isin(genre if genre else df['genre'].unique())
                             & df['review'].dropna().apply(unidecode).str.contains(keywords,flags=re.IGNORECASE, regex=True)  
                             ]
+        st.session_state['engine_df'] = df_filtered.reset_index().head(10)
+    
 
-            st.write(df_filtered)
+    if st.session_state['engine_df'].empty:
+        pass
+    else:
+        for i in range(len(st.session_state['engine_df'])):
+            review = st.session_state['engine_df'].iloc[i]
+            
+            with st.form(review['album']):
+                
+                
+                col1, col2 = st.columns([2,3])
+                with col1:
+                    url = review['link']
+                    st.write(f"**{review['artist']}**")
+                    link = f"[{review['album']}]" + f"({url})"
+                    st.write(link, unsafe_allow_html=True)
+                    search_string = str(review['artist']) + ' ' + str(review['album']) + ' cover'
+                    search_url = duckduckgo_scrape_urls(search_string, max_results=1)
+                    st.image(search_url[0], width=200)
+
+                with col2:
+                    st.metric('Score',review['score'])
+                    if review['bnm'] ==1:
+                        st.write("**Best New Music**")
+                    st.write('Release Year: ' + str(int(review['release_year'])))
+                    with st.expander('Review'):
+                        st.write(review['review'])
+
+                submitted = st.form_submit_button('Get similar reviews')
+            if submitted:
+                review = Review(review['review'],review['artist'])
+                review.word2vec()
+                
+
+
+
     
     
         
