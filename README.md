@@ -1,4 +1,4 @@
-![alt text](streamlit_app/assets/app_logo.PNG)
+![alt text](streamlit_assets/assets/app_logo.PNG)
 # MyPitchfork
 
 Don't we all love [Pitchfork](https://pitchfork.com/) and their absurd review system?  I decided to build an app for all things Pitchfork, including:
