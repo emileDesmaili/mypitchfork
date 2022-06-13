@@ -9,7 +9,7 @@ import plotly.express as px
 from transformers import pipeline
 import re
 from unidecode import unidecode
-from streamlit_assets.components import Review, ner_matrix, corr_matrix
+from streamlit_assets.components import Album 
 from jmd_imagescraper.core import * # dont't worry, it's designed to work with import *
 
 # PAGE SETUP
@@ -58,9 +58,15 @@ def load_predictor():
 @st.cache()
 def load_csv():
     return pd.read_csv('data/raw/pitchfork.csv')
-@st.cache(allow_output_mutation=True)
+@st.cache()
 def load_csv_sample():
     return pd.read_csv('data/raw/pitchfork_sample.csv')
+
+@st.cache()
+def load_ner_matrix():
+    return pd.read_csv('data/raw/ner_matrix.csv')
+
+
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def load_model():
@@ -162,7 +168,7 @@ if page == 'Explorer':
     st.markdown('<p>I decided to use pre-trained NLP models to see if sentiment could determine the score of a review. To that effect, I went for two different approaches: </p>'
                 '<p>1. A <a href="https://huggingface.co/sshleifer/distilbart-cnn-12-6">Pre-trained BART language model </a> to summarize the review and then score sentiment using a <a href="https://huggingface.co/finiteautomata/bertweet-base-sentiment-analysis">Pre-trained BERT sentiment model </a></p>'
                 '<p>2. A sentiment score on the full review, which should be less accurate</p>'
-                '<p>The results are clear: <b>Regardless of the method, sentiment models are not able to predict the scores</b></p>'
+                '<p>The results are clear: <b>regardless of the method, sentiment models are not able to predict the scores</b></p>'
                 '<p><b>Bottom Line: It is sometimes hard for us humans to link the tone of the reviewer to the score, it is near impossible for (pretrained) machines 🤖</b></p>'
 
                 , unsafe_allow_html=True)
@@ -264,6 +270,7 @@ if page == 'Explorer':
 if page =='Review Smart Engine':
 
     df = load_csv()
+    ner_matrix = load_ner_matrix()
     if 'engine_df' not in st.session_state:
         st.session_state['engine_df'] = pd.DataFrame([])
 
@@ -301,7 +308,6 @@ if page =='Review Smart Engine':
             
             with st.form(review['album']):
                 
-                
                 col1, col2 = st.columns([2,3])
                 with col1:
                     url = review['link']
@@ -322,7 +328,9 @@ if page =='Review Smart Engine':
 
                 submitted = st.form_submit_button('Get similar reviews')
             if submitted:
-                review = Review(review['review'],review['artist'])
+                review = Album(review['album'],df=df, matrix=ner_matrix)
+                review.display_matches()
+
 
 
                 

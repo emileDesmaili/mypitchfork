@@ -2,14 +2,57 @@ import streamlit as st
 import pandas as pd 
 from sentence_transformers import SentenceTransformer
 import numpy as np
+from jmd_imagescraper.core import * # dont't worry, it's designed to work with import *
 
 
-class Review:
-    def __init__(self, text, artist):
-        self.text = text
-        self.artist = artist
+class Album:
+    
+    def __init__(self, name, df, matrix):
+        self.df = df
+        self.matrix = matrix
+        self.name = name
+        self.artist = self.df[self.df['album']==self.name]['artist'].iloc[0]
+        self.text = self.df[self.df['album']==self.name]['review'].iloc[0]
+        self.score = self.df[self.df['album']==self.name]['score'].iloc[0]
+        self.bnm = self.df[self.df['album']==self.name]['bnm'].iloc[0]
+        self.year = self.df[self.df['album']==self.name]['release_year'].iloc[0]
+        self.url_link = self.df[self.df['album']==self.name]['link'].iloc[0]
+
+    def scrape_cover(self):
+        search_string = str(self.artist) + ' ' + str(self.name) + ' cover'
+        search_url = duckduckgo_scrape_urls(search_string, max_results=1)
+        self.cover = search_url[0]
+    
+    def get_matches(self, n=5):
+        self.matches = self.matrix.sort_values(by = self.name, ascending=False)['album'].to_list()[:n]
+    
+    def display_matches(self, n=5):
+        self.get_matches(n=n)
+        cols = st.columns(n)
+        i=0
+        for a, x in enumerate(cols):
+            with x:
+                match = Album(self.matches[i], self.df, self.matrix)
+                match.scrape_cover()
+                st.write(f'**{match.artist}**')
+                st.write(f'[{match.name}]({match.url_link})')
+                st.image(match.cover, width=150)
+                i+=1
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+### NOT USED ########
 
 def n_intersections(a,b):
     return len(list(set(a) & set(b)))
