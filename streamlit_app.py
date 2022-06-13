@@ -64,7 +64,7 @@ def load_csv_sample():
 
 @st.cache()
 def load_ner_matrix():
-    return pd.read_csv('data/raw/ner_matrix.csv')
+    return pd.read_csv('data/raw/ner_matrix.zip')
 
 
 
