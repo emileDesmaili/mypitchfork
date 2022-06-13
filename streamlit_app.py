@@ -163,7 +163,7 @@ if page == 'Explorer':
                 '<p>1. A <a href="https://huggingface.co/sshleifer/distilbart-cnn-12-6">Pre-trained BART language model </a> to summarize the review and then score sentiment using a <a href="https://huggingface.co/finiteautomata/bertweet-base-sentiment-analysis">Pre-trained BERT sentiment model </a></p>'
                 '<p>2. A sentiment score on the full review, which should be less accurate</p>'
                 '<p>The results are clear: <b>Regardless of the method, sentiment models are not able to predict the scores</b></p>'
-                '<p><b>It is sometimes hard for us humans to link the tone of the reviewer to the score, it is near impossiblr for (pretrained) machines</b></p>'
+                '<p><b>Bottom Line: It is sometimes hard for us humans to link the tone of the reviewer to the score, it is near impossible for (pretrained) machines 🤖</b></p>'
 
                 , unsafe_allow_html=True)
     col1, col2 = st.columns(2)
@@ -183,7 +183,7 @@ if page == 'Explorer':
     
     st.write('**NB**: The sentiment score were calculated from the model output using the standard normalization formula:')
     st.latex(r'''
-     score_{composite} = \frac{score_{positive}-score_{positive}}{score_{positive}+score_{negative}+score_{neutral}} 
+     score_{composite} = \frac{score_{positive}-score_{negative}}{score_{positive}+score_{negative}+score_{neutral}} 
      ''')
 
 
