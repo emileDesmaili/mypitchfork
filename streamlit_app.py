@@ -9,7 +9,7 @@ import plotly.express as px
 from transformers import pipeline
 import re
 from unidecode import unidecode
-from streamlit_assets.components import Review
+from streamlit_assets.components import Review, ner_matrix, corr_matrix
 from jmd_imagescraper.core import * # dont't worry, it's designed to work with import *
 
 # PAGE SETUP
@@ -58,6 +58,9 @@ def load_predictor():
 @st.cache()
 def load_csv():
     return pd.read_csv('data/raw/pitchfork.csv')
+@st.cache(allow_output_mutation=True)
+def load_csv_sample():
+    return pd.read_csv('data/raw/pitchfork_sample.csv')
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def load_model():
@@ -112,6 +115,8 @@ if page == 'Review Generator':
 
 if page == 'Explorer':
     df = load_csv()
+    df_sample = load_csv_sample()
+
     st.title('Pitchfork Review Explorer')
     st.header('Some Facts! (as of early 2019)')
     col1, col2, col3 = st.columns(3)
@@ -153,6 +158,33 @@ if page == 'Explorer':
         fig.update_traces(marker_color='firebrick')
         st.plotly_chart(fig, use_container_width=True)
 
+    st.header('Sentiment and scores')
+    st.markdown('<p>I decided to use pre-trained NLP models to see if sentiment could determine the score of a review. To that effect, I went for two different approaches: </p>'
+                '<p>1. A <a href="https://huggingface.co/sshleifer/distilbart-cnn-12-6">Pre-trained BART language model </a> to summarize the review and then score sentiment using a <a href="https://huggingface.co/finiteautomata/bertweet-base-sentiment-analysis">Pre-trained BERT sentiment model </a></p>'
+                '<p>2. A sentiment score on the full review, which should be less accurate</p>'
+                '<p>The results are clear: <b>Regardless of the method, sentiment models are not able to predict the scores</b></p>'
+                '<p><b>It is sometimes hard for us humans to link the tone of the reviewer to the score, it is near impossiblr for (pretrained) machines</b></p>'
+
+                , unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+
+    with col1:
+        fig = px.scatter(df_sample,x='sentiment_full',y = 'score', trendline='ols',
+                        color= df_sample["bnm"].apply(lambda x: "BNM" if x == 1 else "not BNM").astype(str))
+        fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}) 
+        fig.update_layout(showlegend=True, xaxis_title='Sentiment on full review')
+        st.plotly_chart(fig)
+    with col2:
+        fig = px.scatter(df_sample,x='sentiment_sumup',y = 'score', trendline='ols',
+                        color= df_sample["bnm"].apply(lambda x: "BNM" if x == 1 else "not BNM").astype(str))
+        fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)','paper_bgcolor': 'rgba(0, 0, 0, 0)',}) 
+        fig.update_layout(showlegend=True, xaxis_title='Sentiment on summarized review')
+        st.plotly_chart(fig)
+    
+    st.write('**NB**: The sentiment score were calculated from the model output using the standard normalization formula:')
+    st.latex(r'''
+     score_{composite} = \frac{score_{positive}-score_{positive}}{score_{positive}+score_{negative}+score_{neutral}} 
+     ''')
 
 
     st.header('Make Your Plots')
@@ -230,6 +262,7 @@ if page == 'Explorer':
 
 
 if page =='Review Smart Engine':
+
     df = load_csv()
     if 'engine_df' not in st.session_state:
         st.session_state['engine_df'] = pd.DataFrame([])
@@ -290,7 +323,9 @@ if page =='Review Smart Engine':
                 submitted = st.form_submit_button('Get similar reviews')
             if submitted:
                 review = Review(review['review'],review['artist'])
-                review.word2vec()
+
+
+                
                 
 
 
