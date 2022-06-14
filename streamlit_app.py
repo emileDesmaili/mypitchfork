@@ -106,7 +106,7 @@ if page == 'Review Generator':
 
 
         st.success('Well Done, you can almost be a writer for Pitchfork!')
-        st.markdown(text)
+        st.write(text)
         with st.spinner('Consulting all P4K writers to decide on the most accurate score'):
             new_review = embedder.encode(text)
             score = predictor.predict(new_review.reshape(1,-1)).item()
