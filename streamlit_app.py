@@ -62,9 +62,7 @@ def load_csv():
 def load_csv_sample():
     return pd.read_csv('data/raw/pitchfork_sample.csv')
 
-@st.cache()
-def load_ner_matrix():
-    return pd.read_csv('data/raw/ner_matrix.zip')
+
 
 
 
@@ -270,7 +268,6 @@ if page == 'Explorer':
 if page =='Review Smart Engine':
 
     df = load_csv()
-    ner_matrix = load_ner_matrix()
     if 'engine_df' not in st.session_state:
         st.session_state['engine_df'] = pd.DataFrame([])
 
@@ -328,7 +325,7 @@ if page =='Review Smart Engine':
 
                 submitted = st.form_submit_button('Get similar reviews')
             if submitted:
-                review = Album(review['album'],df=df, matrix=ner_matrix)
+                review = Album(review['album'],df=df)
                 review.display_matches()
 
 

@@ -7,9 +7,8 @@ from jmd_imagescraper.core import * # dont't worry, it's designed to work with i
 
 class Album:
     
-    def __init__(self, name, df, matrix):
+    def __init__(self, name, df):
         self.df = df
-        self.matrix = matrix
         self.name = name
         self.artist = self.df[self.df['album']==self.name]['artist'].iloc[0]
         self.text = self.df[self.df['album']==self.name]['review'].iloc[0]
@@ -18,12 +17,17 @@ class Album:
         self.year = self.df[self.df['album']==self.name]['release_year'].iloc[0]
         self.url_link = self.df[self.df['album']==self.name]['link'].iloc[0]
 
+    
+    def load_ner_matrix(self):
+        self.matrix = pd.read_csv('data/raw/ner_matrix.zip',usecols=['album',self.name])
+
     def scrape_cover(self):
         search_string = str(self.artist) + ' ' + str(self.name) + ' cover'
         search_url = duckduckgo_scrape_urls(search_string, max_results=1)
         self.cover = search_url[0]
     
     def get_matches(self, n=5):
+        self.load_ner_matrix()
         self.matches = self.matrix.sort_values(by = self.name, ascending=False)['album'].to_list()[:n]
     
     def display_matches(self, n=5):
@@ -32,7 +36,7 @@ class Album:
         i=0
         for a, x in enumerate(cols):
             with x:
-                match = Album(self.matches[i], self.df, self.matrix)
+                match = Album(self.matches[i], self.df)
                 match.scrape_cover()
                 st.write(f'**{match.artist}**')
                 st.write(f'[{match.name}]({match.url_link})')
